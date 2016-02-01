@@ -1,18 +1,15 @@
 require 'rbvmomi'
 require 'vSphere/util/vim_helpers'
+require 'vSphere/util/vm_helpers'
 
 module VagrantPlugins
   module VSphere
     module Action
       class GetState
         include Util::VimHelpers
+        include Util::VmHelpers
 
-        # the three possible values of a vSphere VM's power state
-        POWERED_ON = 'poweredOn'
-        POWERED_OFF = 'poweredOff'
-        SUSPENDED = 'suspended'
-
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
         end
 
@@ -29,11 +26,9 @@ module VagrantPlugins
 
           vm = get_vm_by_uuid connection, machine
 
-          if vm.nil?
-            return :not_created
-          end
+          return :not_created if vm.nil?
 
-          if vm.runtime.powerState.eql?(POWERED_ON)
+          if powered_on?(vm)
             :running
           else
             # If the VM is powered off or suspended, we consider it to be powered off. A power on command will either turn on or resume the VM

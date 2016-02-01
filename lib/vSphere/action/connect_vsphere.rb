@@ -4,7 +4,7 @@ module VagrantPlugins
   module VSphere
     module Action
       class ConnectVSphere
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
         end
 
@@ -13,15 +13,14 @@ module VagrantPlugins
 
           begin
             env[:vSphere_connection] = RbVmomi::VIM.connect host: config.host,
-              user: config.user, password: config.password,
-              insecure: config.insecure, proxyHost: config.proxy_host,
-              proxyPort: config.proxy_port
+                                                            user: config.user, password: config.password,
+                                                            insecure: config.insecure, proxyHost: config.proxy_host,
+                                                            proxyPort: config.proxy_port
             @app.call env
-          rescue VSphere::Errors::VSphereError => e
+          rescue Errors::VSphereError
             raise
-          rescue Exception => e
-            puts e.backtrace
-            raise VagrantPlugins::VSphere::Errors::VSphereError, :message => e.message
+          rescue StandardError => e
+            raise Errors::VSphereError.new, e.message
           end
         end
       end

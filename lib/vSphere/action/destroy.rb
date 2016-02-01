@@ -8,7 +8,7 @@ module VagrantPlugins
       class Destroy
         include Util::VimHelpers
 
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
         end
 
@@ -19,19 +19,20 @@ module VagrantPlugins
           @app.call env
         end
 
-        private 
-        
+        private
+
         def destroy_vm(env)
+          return if env[:machine].state.id == :not_created
           vm = get_vm_by_uuid env[:vSphere_connection], env[:machine]
           return if vm.nil?
 
           begin
             env[:ui].info I18n.t('vsphere.destroy_vm')
             vm.Destroy_Task.wait_for_completion
-          rescue Errors::VSphereError => e
+          rescue Errors::VSphereError
             raise
-          rescue Exception => e
-            raise Errors::VSphereError, :message => e.message
+          rescue StandardError => e
+            raise Errors::VSphereError.new, e.message
           end
         end
       end

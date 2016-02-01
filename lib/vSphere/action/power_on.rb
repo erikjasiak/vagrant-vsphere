@@ -1,16 +1,16 @@
 require 'rbvmomi'
 require 'i18n'
 require 'vSphere/util/vim_helpers'
-require 'vSphere/util/machine_helpers'
+require 'vSphere/util/vm_helpers'
 
 module VagrantPlugins
   module VSphere
     module Action
       class PowerOn
         include Util::VimHelpers
-        include Util::MachineHelpers
+        include Util::VmHelpers
 
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
         end
 
@@ -18,11 +18,8 @@ module VagrantPlugins
           vm = get_vm_by_uuid env[:vSphere_connection], env[:machine]
 
           env[:ui].info I18n.t('vsphere.power_on_vm')
-          vm.PowerOnVM_Task.wait_for_completion
-          
-          # wait for SSH to be available 
-          wait_for_ssh env
-          
+          power_on_vm(vm)
+
           @app.call env
         end
       end

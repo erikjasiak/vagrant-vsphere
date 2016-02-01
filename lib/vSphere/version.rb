@@ -1,5 +1,5 @@
 module VagrantPlugins
   module VSphere
-    VERSION = '0.8.2'
+    VERSION = '1.6.0'
   end
 end
